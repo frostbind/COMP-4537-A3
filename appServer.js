@@ -27,7 +27,7 @@ dotenv.config();
 
 
 const app = express()
-// const port = 5000
+const port = 8000
 var pokeModel = null;
 
 const start = asyncWrapper(async () => {
@@ -36,11 +36,11 @@ const start = asyncWrapper(async () => {
   // pokeModel = await populatePokemons(pokeSchema);
   pokeModel = mongoose.model('pokemons', pokeSchema);
 
-  app.listen(process.env.pokeServerPORT, (err) => {
+  app.listen(port, (err) => {
     if (err)
       throw new PokemonDbError(err)
     else
-      console.log(`Phew! Server is running on port: ${process.env.pokeServerPORT}`);
+      console.log(`Phew! Server is running on port: ${port}`);
   })
 })
 start()
