@@ -5,7 +5,11 @@ console.log(process.env)
 
 const connectDB = async (input) => {
   try {
-    const x = await mongoose.connect(process.env.DB_STRING)
+    const x = await mongoose.connect('mongodb://127.0.0.1:27017/test', 
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    })
     console.log("Connected to db");
     if (input.drop === true)
       mongoose.connection.db.dropDatabase();
