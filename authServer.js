@@ -5,6 +5,7 @@ const dotenv = require("dotenv")
 dotenv.config();
 const userModel = require("./userModel.js")
 const { connectDB } = require("./connectDB.js")
+const port = 8000;
 
 const {
   PokemonBadRequest,
@@ -18,11 +19,11 @@ const start = asyncWrapper(async () => {
   await connectDB({ "drop": false });
 
 
-  app.listen(process.env.authServerPORT, async (err) => {
+  app.listen(process.env.PORT, async (err) => {
     if (err)
       throw new PokemonDbError(err)
     else
-      console.log(`Phew! Server is running on port: ${process.env.authServerPORT}`);
+      console.log(`Phew! Server is running on port: ${process.env.PORT}`);
     const doc = await userModel.findOne({ "username": "admin" })
     if (!doc)
       userModel.create({ username: "admin", password: bcrypt.hashSync("admin", 10), role: "admin", email: "admin@admin.ca" })

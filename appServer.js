@@ -36,11 +36,11 @@ const start = asyncWrapper(async () => {
   // pokeModel = await populatePokemons(pokeSchema);
   pokeModel = mongoose.model('pokemons', pokeSchema);
 
-  app.listen(port, (err) => {
+  app.listen(process.env.PORT, (err) => {
     if (err)
       throw new PokemonDbError(err)
     else
-      console.log(`Phew! Server is running on port: ${port}`);
+      console.log(`Phew! Server is running on port: ${process.env.PORT}`);
   })
 })
 start()
