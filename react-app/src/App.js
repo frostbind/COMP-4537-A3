@@ -7,9 +7,12 @@ function App() {
 
   async function fetchPokemons() {
     try {
-      const res = await fetch("/api/v1/pokemons");
+      const res = await fetch("http://localhost:8888/api/v1/pokemons");
+      console.log(res)
       if (!res.ok) throw new Error(`Failed to fetch pokemons: ${res.status}`);
-      const data = await res.json();
+      const dataAsString = await res.text();
+      console.log(dataAsString)
+      const data = JSON.parse(dataAsString);
       setPokemons(data);
     } catch (err) {
       setErrorMsg(err.message);
