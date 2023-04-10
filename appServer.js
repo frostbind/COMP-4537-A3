@@ -27,7 +27,6 @@ dotenv.config();
 
 
 const app = express()
-const port = 8000
 var pokeModel = null;
 
 const start = asyncWrapper(async () => {
@@ -36,11 +35,11 @@ const start = asyncWrapper(async () => {
   // pokeModel = await populatePokemons(pokeSchema);
   pokeModel = mongoose.model('pokemons', pokeSchema);
 
-  app.listen(process.env.PORT, (err) => {
+  app.listen(8888, (err) => {
     if (err)
       throw new PokemonDbError(err)
     else
-      console.log(`Phew! Server is running on port: ${process.env.PORT}`);
+      console.log(`Phew! Server is running on port: ${8888}`);
   })
 })
 start()
@@ -52,10 +51,19 @@ const userModel = require("./userModel.js")
 const authUser = asyncWrapper(async (req, res, next) => {
   // const to ken = req.header('auth-token')
   const token = req.query.appid
+  
   if (!token) {
     throw new PokemonAuthError("No Token: Please provide an appid query parameter.")
   }
   const userWithToken = await userModel.findOne({ token })
+  userModel.find(function (err, docs) {
+    if (err) {
+      console.log(err)
+    } else {
+      console.log("token: ", token);  
+      console.log("Current users: ", docs);
+    }
+  })
   if (!userWithToken || userWithToken.token_invalid) {
     throw new PokemonAuthError("Please Login.")
   }
