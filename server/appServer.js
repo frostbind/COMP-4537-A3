@@ -1,9 +1,9 @@
 const mongoose = require("mongoose")
 const express = require("express")
-const { connectDB } = require("./connectDB.js")
-const { populatePokemons } = require("./populatePokemons.js")
-const { getTypes } = require("./getTypes.js")
-const { handleErr } = require("./errorHandler.js")
+const { connectDB } = require("../connectDB.js")
+const { populatePokemons } = require("../populatePokemons.js")
+const { getTypes } = require("../getTypes.js")
+const { handleErr } = require("../errorHandler.js")
 const morgan = require("morgan")
 const cors = require("cors")
 
@@ -16,9 +16,9 @@ const {
   PokemonDuplicateError,
   PokemonNoSuchRouteError,
   PokemonAuthError
-} = require("./errors.js")
+} = require("../errors.js")
 
-const { asyncWrapper } = require("./asyncWrapper.js")
+const { asyncWrapper } = require("../asyncWrapper.js")
 
 const dotenv = require("dotenv")
 dotenv.config();
@@ -27,7 +27,7 @@ const app = express()
 var pokeModel = null;
 
 const jwt = require("jsonwebtoken")
-const userModel = require("./userModel.js")
+const userModel = require("../userModel.js")
 
 const authUser = asyncWrapper(async (req, res, next) => {
   const authHeader = req.headers.authorization;
