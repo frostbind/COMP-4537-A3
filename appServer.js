@@ -7,7 +7,6 @@ const { handleErr } = require("./errorHandler.js")
 const morgan = require("morgan")
 const cors = require("cors")
 
-
 const {
   PokemonBadRequest,
   PokemonBadRequestMissingID,
@@ -24,15 +23,86 @@ const { asyncWrapper } = require("./asyncWrapper.js")
 const dotenv = require("dotenv")
 dotenv.config();
 
-
-
 const app = express()
 var pokeModel = null;
+
+const jwt = require("jsonwebtoken")
+const userModel = require("./userModel.js")
+
+const authUser = asyncWrapper(async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  const token = authHeader && authHeader.split(" ")[1];
+
+  if (!token) {
+    throw new PokemonAuthError("No Token: Please provide a valid JWT token in the Authorization header.")
+  }
+
+  const userWithToken = await userModel.findOne({ token })
+  userModel.find(function (err, docs) {
+    if (err) {
+      console.log(err)
+    } else {
+      console.log("token: ", token);  
+      console.log("Current users: ", docs);
+    }
+  })
+
+  if (!userWithToken || userWithToken.token_invalid) {
+    throw new PokemonAuthError("Please Login.")
+  }
+
+  try {
+    const verified = jwt.verify(token, process.env.TOKEN_SECRET)
+    next()
+  } catch (err) {
+    throw new PokemonAuthError("Invalid user.")
+  }
+})
+
+// const authUser = asyncWrapper(async (req, res, next) => {
+//   const token = req.query.appid
+
+//   if (!token) {
+//     throw new PokemonAuthError("No Token: Please provide an appid query parameter.")
+//   }
+
+//   const userWithToken = await userModel.findOne({ token })
+//   userModel.find(function (err, docs) {
+//     if (err) {
+//       console.log(err)
+//     } else {
+//       console.log("token: ", token);  
+//       console.log("Current users: ", docs);
+//     }
+//   })
+
+//   if (!userWithToken || userWithToken.token_invalid) {
+//     throw new PokemonAuthError("Please Login.")
+//   }
+
+//   try {
+//     const verified = jwt.verify(token, process.env.TOKEN_SECRET)
+//     next()
+//   } catch (err) {
+//     throw new PokemonAuthError("Invalid user.")
+//   }
+// })
+
+const authAdmin = asyncWrapper(async (req, res, next) => {
+  const user = await userModel.findOne({ token: req.query.appid })
+
+  if (user.role !== "admin") {
+    throw new PokemonAuthError("Access denied")
+  }
+
+  next()
+})
+
+app.use(express.static('public'));
 
 const start = asyncWrapper(async () => {
   await connectDB({ "drop": false });
   const pokeSchema = await getTypes();
-  // pokeModel = await populatePokemons(pokeSchema);
   pokeModel = mongoose.model('pokemons', pokeSchema);
 
   app.listen(8888, (err) => {
@@ -43,56 +113,21 @@ const start = asyncWrapper(async () => {
   })
 })
 start()
+
 app.use(express.json())
-const jwt = require("jsonwebtoken")
-// const { findOne } = require("./userModel.js")
-const userModel = require("./userModel.js")
 
-const authUser = asyncWrapper(async (req, res, next) => {
-  // const to ken = req.header('auth-token')
-  const token = req.query.appid
-  
-  if (!token) {
-    throw new PokemonAuthError("No Token: Please provide an appid query parameter.")
-  }
-  const userWithToken = await userModel.findOne({ token })
-  userModel.find(function (err, docs) {
-    if (err) {
-      console.log(err)
-    } else {
-      console.log("token: ", token);  
-      console.log("Current users: ", docs);
-    }
-  })
-  if (!userWithToken || userWithToken.token_invalid) {
-    throw new PokemonAuthError("Please Login.")
-  }
-  try {
-    // console.log("token: ", token);
-    const verified = jwt.verify(token, process.env.TOKEN_SECRET) // nothing happens if token is valid
-    next()
-  } catch (err) {
-    throw new PokemonAuthError("Invalid user.")
-  }
-})
-
-const authAdmin = asyncWrapper(async (req, res, next) => {
-  const user = await userModel.findOne({ token: req.query.appid })
-  if (user.role !== "admin") {
-    throw new PokemonAuthError("Access denied")
-  }
-  next()
-})
-
-
-
-// app.use(morgan("tiny"))
 app.use(morgan(":method"))
 
-app.use(cors())
+app.use(cors({
+  origin: '*' // replace with your frontend URL or * for all origins
+}));
 
+app.get('/home', asyncWrapper(async (req, res) => {
+  res.sendFile(__dirname + '/search.html');
+}))
 
-app.use(authUser) // Boom! All routes below this line are protected
+app.use(authUser) // All routes below this line are protected
+
 app.get('/api/v1/pokemons', asyncWrapper(async (req, res) => {
   if (!req.query["count"])
     req.query["count"] = 10

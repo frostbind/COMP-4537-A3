@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Search</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    </head>
+    <body>
+        <header>
+            <nav>
+                <form action="/login" method="get" id="timelineButton">
+                    <input type="submit" value="Log In / Log Out">
+                </form>
+            </nav>
+            <h1>Search</h1>
+        </header>
+        <div id="searchContainer">
+            <form onsubmit="event.preventDefault(); search();">
+                <label for="typeFilter">Filter by Type</label>
+                <select name="" id="typeFilter" onchange="search();">
+                    <option value="any">Any Type</option>
+                    <option class="typeOption" value="normal">Normal</option>
+                    <option class="typeOption" value="fire">Fire</option>
+                    <option class="typeOption" value="water">Water</option>
+                    <option class="typeOption" value="electric">Electric</option>
+                    <option class="typeOption" value="grass">Grass</option>
+                    <option class="typeOption" value="ice">Ice</option>
+                    <option class="typeOption" value="fighting">Fighting</option>
+                    <option class="typeOption" value="poison">Poison</option>
+                    <option class="typeOption" value="ground">Ground</option>
+                    <option class="typeOption" value="flying">Flying</option>
+                    <option class="typeOption" value="psychic">Psychic</option>
+                    <option class="typeOption" value="bug">Bug</option>
+                    <option class="typeOption" value="rock">Rock</option>
+                    <option class="typeOption" value="ghost">Ghost</option>
+                    <option class="typeOption" value="dragon">Dragon</option>
+                    <option class="typeOption" value="dark">Dark</option>
+                    <option class="typeOption" value="steel">Steel</option>
+                    <option class="typeOption" value="fairy">Fairy</option>
+                </select>
+
+                <label for="searchBar">Search by Name</label>
+                <input id="searchBar" type="text">
+
+                <input id="clickMe" type="submit" value="Search"/>
+            </form>
+            <div>
+                <label for="prevSearch">Previous Searches</label>
+                <select name="" id="prevSearch" onchange="previousSearch();">
+                    
+                </select>
+            </div>
+        </div>
+
+        <main>
+
+        </main>
+
+    </body>
+
+    <script>
+        to_add = ''
+        freeSearch = false;
+        saerchResult = ``
+        previousSearches = 0;
+
+        searchName = ``
+        searchWeight = 0
+
+        class Criteria {
+            constructor(type, weight, name) {
+                this.type = type;
+                this.weight = weight;
+                this.name = name;
+            }
+        }
+
+        prevSearches = []
+
+        function processPokeResp(data){
+            backgroundColor = "";
+            switch(data.types[0].type.name) {
+                case "normal":  
+                    backgroundColor = "#A8A77A"
+                    break;
+                case "fire":    
+                    backgroundColor = "#EE8130"
+                    break;
+                case "water":   
+                    backgroundColor = "#6390F0"
+                    break;
+                case "electric":
+                    backgroundColor = "#F7D02C"
+                    break;
+                case "grass":   
+                    backgroundColor = "#7AC74C"
+                    break;
+                case "ice":     
+                    backgroundColor = "#96D9D6"
+                    break;
+                case "fighting":
+                    backgroundColor = "#C22E28"
+                    break;
+                case "poison":  
+                    backgroundColor = "#A33EA1"
+                    break;
+                case "ground":  
+                    backgroundColor = "#E2BF65"
+                    break;
+                case "flying":  
+                    backgroundColor = "#A98FF3"
+                    break;
+                case "psychic": 
+                    backgroundColor = "#F95587"
+                    break;
+                case "bug":     
+                    backgroundColor = "#A6B91A"
+                    break;
+                case "rock":    
+                    backgroundColor = "#B6A136"
+                    break;
+                case "ghost":   
+                    backgroundColor = "#735797"
+                    break;
+                case "dragon":  
+                    backgroundColor = "#6F35FC"
+                    break;
+                case "dark":    
+                    backgroundColor = "#705746"
+                    break;
+                case "steel":   
+                    backgroundColor = "#B7B7CE"
+                    break;
+                case "fairy":   
+                    backgroundColor = "#D685AD"
+                    break;
+                default: backgroundColor = "none"
+            }
+        }
+
+        async function loadSearchResults(data) {
+            i = 0;
+            while (data.pokemon[i] != undefined) {
+                await $.ajax({
+                    type: "GET",
+                    url: data.pokemon[i].pokemon.url,
+                    success: processPokeResp
+                })
+                i++
+            }
+
+            jQuery("main").html(to_add)
+        }
+
+        async function search() {
+            jQuery("main").html("Loading...")
+            to_add = ``
+            searchName = document.getElementById("searchBar").value
+
+            if (document.getElementById("searchBar").value.length == 0) {
+                freeSearch = true
+            } else {freeSearch = false}
+
+            if ($('#typeFilter :selected').val() == `any`) {
+                for ( i=1; i<899; i++)
+                {
+                    type = `localhost:8888/api/v1/pokemon?${i}&appid=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c`
+                    await $.ajax({
+                        type: "GET",
+                        url: type,
+                        headers: {
+                            'Access-Control-Allow-Origin' : '*',
+                            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE',
+                            'Access-Control-Allow-Headers': 'X-Requested-With,content-type'
+                        },
+                        success: processPokeResp
+                    })
+                }
+                jQuery("main").html(to_add)
+                saveResult()
+                return
+            }
+
+            type = `https://pokeapi.co/api/v2/type/${$('#typeFilter :selected').val()}/`
+            console.log(type)
+            await $.ajax({
+                type: "GET",
+                url: type,
+                success: loadSearchResults
+            })
+
+        saveResult()
+        }
+
+        function saveResult() {
+            result = new Criteria($('#typeFilter :selected').val(),
+                                document.getElementById("searchBar").value)
+            prevSearches.push(result)
+
+            saerchResult += 
+            `
+            <option value="${previousSearches}" id="${previousSearches}">
+                <ol>
+                    <li>Type: <span id="${previousSearches}type">${$('#typeFilter :selected').val()}</span>,</li>
+                    <li>Name: <span id="${previousSearches}name">${document.getElementById("searchBar").value}</span></li>
+                </ol>
+            </option>
+            `
+            jQuery("#prevSearch").html(saerchResult)
+            previousSearches++
+        }
+
+        async function previousSearch() {
+            jQuery("main").html("Loading...")
+            to_add = ``
+
+            searchName = prevSearches[$('#prevSearch :selected').val()].name
+            searchWeight = prevSearches[$('#prevSearch :selected').val()].weight
+            type = `https://pokeapi.co/api/v2/type/${prevSearches[$('#prevSearch :selected').val()].type}/`
+            await $.ajax({
+                type: "GET",
+                url: type,
+                success: loadSearchResults
+            })
+        }
+    </script>
+
+    <style>
+        main {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        main * {
+            border: solid black 2px;
+        }
+
+        #searchContainer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        #searchContainer form {
+            display: flex;
+            justify-content: space-around;
+            width: 60%;
+        }
+
+        @media screen and (max-width: 1400px) {
+            #searchContainer form {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                width: 100%;
+                gap: 10px;
+            }
+            
+        }
+    </style>
+</html>
