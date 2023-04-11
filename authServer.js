@@ -1,17 +1,17 @@
 const express = require("express")
-const { handleErr } = require("../errorHandler.js")
+const { handleErr } = require("./errorHandler.js")
 const { asyncWrapper } = require("./asyncWrapper.js")
 const dotenv = require("dotenv")
 dotenv.config();
-const userModel = require("../userModel.js")
-const { connectDB } = require("../connectDB.js")
+const userModel = require("./userModel.js")
+const { connectDB } = require("./connectDB.js")
 const port = 8000;
 
 const {
   PokemonBadRequest,
   PokemonDbError,
   PokemonAuthError
-} = require("../errors.js")
+} = require("./errors.js")
 
 const app = express()
 

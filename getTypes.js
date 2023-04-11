@@ -35,7 +35,8 @@ const getTypes = () => {
             'Speed Attack': Number,
             'Speed Defense': Number,
             "Speed": Number
-          }
+          },
+          "image": String
         })
         resolve(pokeSchema)
       })

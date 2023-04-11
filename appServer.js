@@ -1,9 +1,9 @@
 const mongoose = require("mongoose")
 const express = require("express")
-const { connectDB } = require("../connectDB.js")
-const { populatePokemons } = require("../populatePokemons.js")
-const { getTypes } = require("../getTypes.js")
-const { handleErr } = require("../errorHandler.js")
+const { connectDB } = require("./connectDB.js")
+const { populatePokemons } = require("./populatePokemons.js")
+const { getTypes } = require("./getTypes.js")
+const { handleErr } = require("./errorHandler.js")
 const morgan = require("morgan")
 const cors = require("cors")
 
@@ -16,9 +16,9 @@ const {
   PokemonDuplicateError,
   PokemonNoSuchRouteError,
   PokemonAuthError
-} = require("../errors.js")
+} = require("./errors.js")
 
-const { asyncWrapper } = require("../asyncWrapper.js")
+const { asyncWrapper } = require("./asyncWrapper.js")
 
 const dotenv = require("dotenv")
 dotenv.config();
@@ -27,17 +27,21 @@ const app = express()
 var pokeModel = null;
 
 const jwt = require("jsonwebtoken")
-const userModel = require("../userModel.js")
+const userModel = require("./userModel.js")
 
 const authUser = asyncWrapper(async (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  const token = authHeader && authHeader.split(" ")[1];
+  const token = req.headers.authorization;
+  //const token = authHeader && authHeader.split(" ")[1];
+
+  console.log("Passed Token: " + token);
 
   if (!token) {
+    console.log("No Token Found")
     throw new PokemonAuthError("No Token: Please provide a valid JWT token in the Authorization header.")
   }
 
-  const userWithToken = await userModel.findOne({ token })
+  const userWithToken = await userModel.findOne({ "token" : token })
+  console.log("User with token: " + userWithToken);
   userModel.find(function (err, docs) {
     if (err) {
       console.log(err)
@@ -53,6 +57,7 @@ const authUser = asyncWrapper(async (req, res, next) => {
 
   try {
     const verified = jwt.verify(token, process.env.TOKEN_SECRET)
+    console.log("Verified: " + verified);
     next()
   } catch (err) {
     throw new PokemonAuthError("Invalid user.")
